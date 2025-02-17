@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+</head>
+<body>
+    <h2>Chat Room {{ room_id }}</h2>
+    <div id="chat-log"></div>
+    <input id="chat-message-input" type="text" size="100" />
+    <button id="chat-message-submit">Send</button>
+
+    <script>
+        const roomId = {{ room_id }};
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomId + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').innerHTML += (data.pengirim + ': ' + data.isi_pesan + '<br>');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // Enter key
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            const pengirimId = 16;  // Ganti dengan ID pengguna yang sesuai
+            const penerimaId = 19;  // Ganti dengan ID penerima yang sesuai
+
+            chatSocket.send(JSON.stringify({
+                'pengirim': pengirimId,
+                'penerima': penerimaId,
+                'isi_pesan': message
+            }));
+
+            messageInputDom.value = '';
+        };
+    </script>
+</body>
+</html>
